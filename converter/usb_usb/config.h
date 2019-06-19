@@ -49,6 +49,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Note that this also disables power saving and remote wakeup from keyboard completely.
 //#define NO_USB_SUSPEND_LOOP
 
+/* period of tapping(ms), default=200 */
+#define TAPPING_TERM    200
+/* tap count needed for toggling a feature, default=5 */
+//#define TAPPING_TOGGLE  5
+/* Oneshot timeout(ms), default=0 */
+//#define ONESHOT_TIMEOUT 300
+
 /*
  * Feature disable options
  *  These options are also useful to firmware size reduction.

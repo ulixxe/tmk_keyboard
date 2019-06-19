@@ -45,7 +45,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
 
     /* Layer 1: Vi mode
      * ,-----------------------------------------------------------.
-     * |Esc| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|Ins|Del|
+     * |Fn2| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|Ins|Del|
      * |-----------------------------------------------------------|
      * |Tab  |Hom|PgD|Up |PgU|End|Hom|PgD|PgU|End|   |   |   |Backs|
      * |-----------------------------------------------------------|
@@ -57,7 +57,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      *       `-------------------------------------------'
      */
     [1] = \
-    KEYMAP_HHKB(ESC  ,F1   ,F2   ,F3   ,F4   ,F5   ,F6   ,F7   ,F8   ,F9   ,F10  ,F11  ,F12  ,INS  ,DEL  , \
+    KEYMAP_HHKB(FN2  ,F1   ,F2   ,F3   ,F4   ,F5   ,F6   ,F7   ,F8   ,F9   ,F10  ,F11  ,F12  ,INS  ,DEL  , \
                 TAB     ,HOME ,PGDN ,UP   ,PGUP ,END  ,HOME ,PGDN ,PGUP ,END  ,NO   ,NO   ,NO   ,BSPC    , \
                 LCTL      ,NO   ,LEFT ,DOWN ,RGHT ,NO   ,LEFT ,DOWN ,UP   ,RGHT ,NO   ,NO   ,ENT         , \
                 LSFT         ,NO   ,NO   ,NO   ,NO   ,NO   ,HOME ,PGDN ,PGUP ,END  ,NO   ,RSFT     ,       \
@@ -69,7 +69,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
 
     /* Layer 2: Mouse mode(HJKL)
      * ,-----------------------------------------------------------.
-     * |Esc| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|Ins|Del|
+     * |Fn2| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|Ins|Del|
      * |-----------------------------------------------------------|
      * |Tab  |   |   |   |   |   |MwL|MwD|MwU|MwR|   |   |   |Backs|
      * |-----------------------------------------------------------|
@@ -82,7 +82,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * Mc: Mouse Cursor / Mb: Mouse Button / Mw: Mouse Wheel
      */
     [2] = \
-    KEYMAP_HHKB(ESC  ,F1   ,F2   ,F3   ,F4   ,F5   ,F6   ,F7   ,F8   ,F9   ,F10  ,F11  ,F12  ,INS  ,DEL  , \
+    KEYMAP_HHKB(FN2  ,F1   ,F2   ,F3   ,F4   ,F5   ,F6   ,F7   ,F8   ,F9   ,F10  ,F11  ,F12  ,INS  ,DEL  , \
                 TAB     ,NO   ,NO   ,NO   ,NO   ,NO   ,WH_L ,WH_D ,WH_U ,WH_R ,NO   ,NO   ,NO   ,BSPC    , \
                 LCTL      ,NO   ,ACL0 ,ACL1 ,ACL2 ,NO   ,MS_L ,MS_D ,MS_U ,MS_R ,NO   ,NO   ,ENT         , \
                 LSFT         ,NO   ,NO   ,NO   ,NO   ,BTN3 ,BTN2 ,BTN1 ,BTN4 ,BTN5 ,NO   ,RSFT     ,       \
@@ -116,6 +116,7 @@ const action_t fn_actions[] PROGMEM = {
 #endif
     [0] = ACTION_MODS_TAP_KEY(MOD_RCTL, KC_SPC),      // RControl with tap Space
     [1] = ACTION_FUNCTION_TAP(LAYER_CHANGE),
+    [2] = ACTION_LAYER_SET(0, ON_RELEASE),
 };
 
 
@@ -133,8 +134,6 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
     return MACRO_NONE;
 }
 
-
-uint8_t layer_num = 0;
 
 /*
  * user defined action function
@@ -163,15 +162,19 @@ void action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
             } else {
                 if (record->tap.count > 0) {
                     dprint("MODS_TAP: Tap: unregister_code\n");
-                    if (layer_num == 2)
-                        layer_num = 0;
-                    else
-                        layer_num += 1;
+                    uint8_t layer = 0;
+                    /* check top layer first */
+                    for (int8_t i = 1; i >= 0; i--) {
+                        if (layer_state & (1UL<<i)) {
+                            layer = i+1;
+                            break;
+                        }
+                    }
+                    layer_move(layer);
                 } else {
                     dprint("MODS_TAP: No tap: unregister_mods\n");
-                    layer_num = 0;
+                    layer_move(0);
                 }
-                layer_move(layer_num);
             }
             break;
     }
