@@ -136,6 +136,7 @@ int16_t ibmpc_host_send(uint8_t data)
     wait_us(15);
     data_hi();
     WAIT(clock_hi, 50, 6);
+    if (ibmpc_protocol == IBMPC_PROTOCOL_AT_Z150) { goto RECV; }
     WAIT(clock_lo, 50, 7);
 
     /* Ack */
@@ -145,6 +146,7 @@ int16_t ibmpc_host_send(uint8_t data)
     WAIT(clock_hi, 50, 9);
     WAIT(data_hi, 50, 10);
 
+RECV:
     // clear buffer to get response correctly
     recv_data = 0xFFFF;
     ibmpc_host_isr_clear();
@@ -253,8 +255,8 @@ ISR(IBMPC_INT_VECT)
     if (isr_state == 0x8000) {
         timer_start = t;
     } else {
-        // should not take more than 1ms
-        if (timer_start != t && (uint8_t)(timer_start + 1) != t) {
+        // This gives 2.0ms at least before timeout
+        if ((uint8_t)(t - timer_start) >= 3) {
             ibmpc_isr_debug = isr_state;
             ibmpc_error = IBMPC_ERR_TIMEOUT;
             goto ERROR;

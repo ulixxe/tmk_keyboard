@@ -49,6 +49,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Note that this also disables power saving and remote wakeup from keyboard completely.
 //#define NO_USB_SUSPEND_LOOP
 
+/* Mechanical locking support. */
+#define LOCKING_SUPPORT_ENABLE
+#define LOCKING_RESYNC_ENABLE
+
 /* period of tapping(ms), default=200 */
 #define TAPPING_TERM    200
 /* tap count needed for toggling a feature, default=5 */
